@@ -39,12 +39,26 @@ void MainWindow::setIcmpFields(QString & target)
     struct addrinfo hints = {
         AI_CANONNAME, AF_INET, SOCK_RAW, IPPROTO_ICMP, 0, NULL, NULL, NULL
     };
+    void * addr;
     /* DNS resolution here */
     if (getaddrinfo(ctarget, NULL, &hints, &res) < 0)
     {
         return ;
     }
+    if (res == NULL)
+    {
+        return ;
+    }
 
+    servaddr = reinterpret_cast<struct sockaddr_in *>(res->ai_addr);
+    addr = &(servaddr->sin_addr);
+    inet_ntop(res->ai_family, addr, ping->ipstr, sizeof (ping->ipstr));
+    // display PING (url) in output region
+    QString line = "PING";
+    QString app(ping->ipstr);
+
+    line += app;
+    ui->textEdit->setPlainText(line);
     ping->url = ctarget;
     ping->sent = 0;
     ping->received = 0;
@@ -59,5 +73,11 @@ void MainWindow::on_pingButton_clicked()
 {
     QString targetAddr = ui->lineEdit->text();
     setIcmpFields(targetAddr);
+}
+
+
+void MainWindow::on_lineEdit_returnPressed()
+{
+    on_pingButton_clicked();
 }
 

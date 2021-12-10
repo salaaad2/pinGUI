@@ -19,6 +19,8 @@ public:
 private slots:
     void on_pingButton_clicked();
 
+    void on_lineEdit_returnPressed();
+
 private:
     Ui::MainWindow * ui;
     t_ping * ping;
