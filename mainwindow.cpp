@@ -6,6 +6,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , ping(new t_ping)
 {
     ui->setupUi(this);
 }
@@ -13,18 +14,19 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete ping;
 }
 
 void MainWindow::setIcmpFields(QString & target)
 {
     QByteArray tmp = target.toLocal8Bit();
     char * ctarget = tmp.data();
-    ping.url = ctarget;
-    ping.sent = 0;
-    ping.received = 0;
-    ping.timer = new t_time;
-    ping.reply = new t_reply;
-    ping.pack = new t_pack;
+    ping->url = ctarget;
+    ping->sent = 0;
+    ping->received = 0;
+    ping->timer = new t_time;
+    ping->reply = new t_reply;
+    ping->pack = new t_pack;
 }
 
 void MainWindow::on_pingButton_clicked()
