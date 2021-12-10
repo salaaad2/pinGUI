@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+
 // constructor & destructor
 PinGUI::PinGUI(QWidget *parent)
     : QMainWindow(parent)
@@ -34,6 +36,19 @@ PinGUI::~PinGUI()
 }
 
 // ping loop, send pkts and receive them (duh....)
+int pingLoop(t_ping * ping, int const & sock)
+{
+    auto running = false;
+    auto reptime = 0;
+    auto seq = 0;
+
+    for (auto i = 3; i > 0; i--)
+    {
+        resetPack(ping->pack, seq);
+        seq++;
+    }
+    return (0);
+}
 
 // dns and t_ping init
 void PinGUI::setIcmpFields(QString & target)
@@ -83,6 +98,22 @@ void PinGUI::setIcmpFields(QString & target)
     }
 }
 
+// reset icmp packet between pings
+int PinGUI::resetPack(t_pack * pack, int & seq)
+{
+    pack->hdr.type = ICMP_ECHO;
+    pack->hdr.code = 0;
+    pack->hdr.checksum = 0;
+    pack->hdr.un.echo.id = getpid();
+    pack->hdr.un.echo.sequence = seq;
+
+    for (auto i = 0; i < DATA_SIZE - 1; i++) {
+        pack->load[i] = i + '9';
+    }
+    pack->load[DATA_SIZE - 1] = '\0';
+    pack->hdr.checksum = packSum(pack, PACK_SIZE);
+}
+
 // socket options
 int PinGUI::setSockFields()
 {
@@ -116,6 +147,27 @@ void PinGUI::on_pingButton_clicked()
     setIcmpFields(targetAddr);
 }
 
+// compute checksum
+unsigned int PinGUI::packSum(const void *data, unsigned int size)
+{
+    long sum = 0;
+    int i;
+
+    i = 0;
+    while( size > 1 )  {
+        sum += ((uint16_t*) data)[i];
+        i++;
+        size -= 2;
+    }
+
+    if( size > 0 )
+        sum += * (uint8_t *) data;
+
+    while (sum>>16)
+        sum = (sum & 0xffff) + (sum >> 16);
+
+    return ((int16_t)~sum);
+}
 
 void PinGUI::on_lineEdit_returnPressed()
 {
