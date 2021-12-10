@@ -10,11 +10,11 @@ CONFIG += c++11
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    pingui.cpp
 
 HEADERS += \
-    mainwindow.h \
-    pingheaders.h
+    pingheaders.h \
+    pingui.h
 
 FORMS += \
     mainwindow.ui
