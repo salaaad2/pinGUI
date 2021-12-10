@@ -1,6 +1,15 @@
 #ifndef PING_HDR
 #define PING_HDR
 
+/*********************************/
+/*   cute_ping        (  //      */
+/*   structs           ( )/      */
+/*   by salade         )(/       */
+/*  ________________  ( /)       */
+/* ()__)____________)))))   :^}  */
+/*********************************/
+
+
 #include <netinet/ip_icmp.h>
 #include <iostream>
 

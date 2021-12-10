@@ -13,8 +13,8 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
-    ipv4_header.h \
-    mainwindow.h
+    mainwindow.h \
+    pingheaders.h
 
 FORMS += \
     mainwindow.ui
