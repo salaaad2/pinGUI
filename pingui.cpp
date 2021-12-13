@@ -35,6 +35,29 @@ PinGUI::~PinGUI()
     delete ping;
 }
 
+void
+*coolMemcpy(void *dst, const void *src, size_t n)
+{
+    unsigned char	*dst_ptr;
+    unsigned char	*src_ptr;
+    size_t			i;
+
+    dst_ptr = (unsigned char*)dst;
+    src_ptr = (unsigned char*)src;
+    i = 0;
+    if (src_ptr == NULL && dst_ptr == NULL && n != 0)
+    {
+        return (NULL);
+    }
+    while (i < n)
+    {
+        dst_ptr[i] = src_ptr[i];
+        i++;
+    }
+    return (dst_ptr);
+}
+
+
 // send pkt
 void PinGUI::sendPing(int const & sock)
 {
@@ -57,8 +80,8 @@ void PinGUI::sendPing(int const & sock)
         std::cout << "recv success !" << std::endl;
     }
     ping->received++;
-    memcpy(&ping->reply->ip, recvbuf, 20);
-    memcpy(&ping->reply->hdr, recvbuf + 20, 64);
+    coolMemcpy(&ping->reply->ip, recvbuf, 20);
+    coolMemcpy(&ping->reply->hdr, recvbuf + 20, 64);
 }
 
 // ping loop, send pkts and receive them (duh....)
@@ -183,7 +206,7 @@ unsigned int PinGUI::packSum(const void *data, unsigned int size)
 void PinGUI::resetPack(int const & seq)
 {
     t_pack * pack = ping->pack;
-    bzero(pack, sizeof (t_ping));
+    memset(pack, '\0', sizeof (t_pack));
 
     pack->hdr.type = ICMP_ECHO;
     pack->hdr.code = 0;

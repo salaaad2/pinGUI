@@ -19,7 +19,7 @@
 #define PACK_SIZE ICMP_SIZE + DATA_SIZE
 #define FULL_SIZE PACK_SIZE + IP_SIZE
 
-#define DATA_CONT "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+#define DATA_CONT "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 typedef struct s_pack {
     struct icmphdr hdr;
