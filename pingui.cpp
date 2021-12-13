@@ -72,6 +72,7 @@ void PinGUI::sendPing(int const & sock)
     } else {
         std::cout << "sendto success !" << std::endl;
     }
+
     ping->sent++;
 
     if ((ret = recvfrom(sock, recvbuf, PACK_SIZE + IP_SIZE, 0, (struct sockaddr *)ping->servaddr, &addrsize)) < 0) {
