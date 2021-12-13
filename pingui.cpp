@@ -57,20 +57,40 @@ void
     return (dst_ptr);
 }
 
+void PinGUI::displayData()
+{
+    QString qsnt = QString::fromStdString(std::to_string(ping->sent));
+    QString qrcv = QString::fromStdString(std::to_string(ping->received));
+    QString qttl = QString::fromStdString(std::to_string(ping->reply->ip.ttl));
+
+    std::cout << "what ? \n";
+    ui->label_3->repaint();
+    ui->label_5->repaint();
+    ui->label_7->repaint();
+    ui->label_9->repaint();
+
+    ui->label_3->setText(ping->url);
+    ui->label_5->setText(qsnt);
+    ui->label_7->setText(qrcv);
+    ui->label_9->setText("cool");
+    ui->label_11->setText(qttl);
+}
+
 
 // send pkt
 void PinGUI::sendPing(int const & sock)
 {
     socklen_t addrsize = sizeof(const struct sockaddr);
     char recvbuf[98];
-    t_pack * pack = ping->pack;
-    int ret = 42;
+    auto pack = ping->pack;
+    auto ret = 42;
 
     memset(recvbuf, '\0', 98);
+
     if (sendto(sock, pack, PACK_SIZE, 0, (struct sockaddr *)ping->servaddr, addrsize) < 0) {
         return ;
     } else {
-        std::cout << "sendto success !" << std::endl;
+        std::cout << "sendto success !" << std::endl; // rm all cout
     }
 
     ping->sent++;
@@ -85,22 +105,24 @@ void PinGUI::sendPing(int const & sock)
     coolMemcpy(&ping->reply->hdr, recvbuf + 20, 64);
 }
 
-// ping loop, send pkts and receive them (duh....)
+// ping loop: display, send, and receive packets
 int PinGUI::pingLoop(int const & sock)
 {
     auto running = true;
     auto seq = 0;
 
-    for (auto i = 10; i > 0; i--)
+    ui->label_3->setText(ping->url);
+    for (;;)
     {
         if (running)
         {
-            std::cout << "coolman + [" << ping->reply->hdr.un.echo.sequence <<  "]" << ping->reply->ip.ttl << std::endl;
             resetPack(seq);
             sendPing(sock);
-            // TODO: displayData();
+            std::cout << "display data" <<std::endl;
+            displayData();
             seq++;
         }
+        sleep(1);
     }
     return (0);
 }
@@ -135,12 +157,7 @@ void PinGUI::setIcmpFields(QString & target)
     inet_ntop(res->ai_family, addr, ping->ipstr, sizeof (ping->ipstr));
 
     ping->servaddr = servaddr;
-    // display PING (url) in output region
-    QString line = "PING: ";
-    QString app(ping->ipstr);
 
-    line += app;
-    ui->textEdit->setPlainText(line);
     ping->url = ctarget;
     ping->sent = 0;
     ping->received = 0;
