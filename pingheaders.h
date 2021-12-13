@@ -17,6 +17,9 @@
 #define ICMP_SIZE sizeof(struct icmphdr)
 #define DATA_SIZE 56
 #define PACK_SIZE ICMP_SIZE + DATA_SIZE
+#define FULL_SIZE PACK_SIZE + IP_SIZE
+
+#define DATA_CONT "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 typedef struct s_pack {
     struct icmphdr hdr;
@@ -37,6 +40,7 @@ typedef struct s_ping {
     t_time * timer;
     t_pack * pack;
     t_reply * reply;
+    struct sockaddr_in * servaddr;
     unsigned long sent;
     unsigned long received;
     char ipstr[16];

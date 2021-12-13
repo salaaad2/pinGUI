@@ -26,8 +26,9 @@ private:
     t_ping * ping;
     void setIcmpFields(QString & target);
     int setSockFields();
-    int pingLoop(t_ping * ping, int const & sock);
-    int resetPack(t_pack * pack, int & seq);
+    int pingLoop(int const & sock);
+    void sendPing(int const & sock);
+    void resetPack(int const & seq);
     unsigned int packSum(const void *data, unsigned int size);
 
 };

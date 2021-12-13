@@ -35,17 +35,48 @@ PinGUI::~PinGUI()
     delete ping;
 }
 
-// ping loop, send pkts and receive them (duh....)
-int pingLoop(t_ping * ping, int const & sock)
+// send pkt
+void PinGUI::sendPing(int const & sock)
 {
-    auto running = false;
-    auto reptime = 0;
+    socklen_t addrsize = sizeof(const struct sockaddr);
+    char recvbuf[98];
+    t_pack * pack = ping->pack;
+    int ret = 42;
+
+    memset(recvbuf, '\0', 98);
+    if (sendto(sock, pack, PACK_SIZE, 0, (struct sockaddr *)ping->servaddr, addrsize) < 0) {
+        return ;
+    } else {
+        std::cout << "sendto success !" << std::endl;
+    }
+    ping->sent++;
+
+    if ((ret = recvfrom(sock, recvbuf, PACK_SIZE + IP_SIZE, 0, (struct sockaddr *)ping->servaddr, &addrsize)) < 0) {
+        return ;
+    } else {
+        std::cout << "recv success !" << std::endl;
+    }
+    ping->received++;
+    memcpy(&ping->reply->ip, recvbuf, 20);
+    memcpy(&ping->reply->hdr, recvbuf + 20, 64);
+}
+
+// ping loop, send pkts and receive them (duh....)
+int PinGUI::pingLoop(int const & sock)
+{
+    auto running = true;
     auto seq = 0;
 
-    for (auto i = 3; i > 0; i--)
+    for (auto i = 10; i > 0; i--)
     {
-        resetPack(ping->pack, seq);
-        seq++;
+        if (running)
+        {
+            std::cout << "coolman + [" << ping->reply->hdr.un.echo.sequence <<  "]" << ping->reply->ip.ttl << std::endl;
+            resetPack(seq);
+            sendPing(sock);
+            // TODO: displayData();
+            seq++;
+        }
     }
     return (0);
 }
@@ -79,6 +110,7 @@ void PinGUI::setIcmpFields(QString & target)
     addr = &(servaddr->sin_addr);
     inet_ntop(res->ai_family, addr, ping->ipstr, sizeof (ping->ipstr));
 
+    ping->servaddr = servaddr;
     // display PING (url) in output region
     QString line = "PING: ";
     QString app(ping->ipstr);
@@ -94,24 +126,8 @@ void PinGUI::setIcmpFields(QString & target)
     int sock = setSockFields();
     if (sock != -1)
     {
-        pingLoop(ping, sock);
+        pingLoop(sock);
     }
-}
-
-// reset icmp packet between pings
-int PinGUI::resetPack(t_pack * pack, int & seq)
-{
-    pack->hdr.type = ICMP_ECHO;
-    pack->hdr.code = 0;
-    pack->hdr.checksum = 0;
-    pack->hdr.un.echo.id = getpid();
-    pack->hdr.un.echo.sequence = seq;
-
-    for (auto i = 0; i < DATA_SIZE - 1; i++) {
-        pack->load[i] = i + '9';
-    }
-    pack->load[DATA_SIZE - 1] = '\0';
-    pack->hdr.checksum = packSum(pack, PACK_SIZE);
 }
 
 // socket options
@@ -140,12 +156,6 @@ int PinGUI::setSockFields()
     }
     return (sockfd);
 }
-// qt slots()
-void PinGUI::on_pingButton_clicked()
-{
-    QString targetAddr = ui->lineEdit->text();
-    setIcmpFields(targetAddr);
-}
 
 // compute checksum
 unsigned int PinGUI::packSum(const void *data, unsigned int size)
@@ -167,6 +177,29 @@ unsigned int PinGUI::packSum(const void *data, unsigned int size)
         sum = (sum & 0xffff) + (sum >> 16);
 
     return ((int16_t)~sum);
+}
+
+// reset packet and
+void PinGUI::resetPack(int const & seq)
+{
+    t_pack * pack = ping->pack;
+    bzero(pack, sizeof (t_ping));
+
+    pack->hdr.type = ICMP_ECHO;
+    pack->hdr.code = 0;
+    pack->hdr.checksum = 0;
+    pack->hdr.un.echo.id = getpid();
+    pack->hdr.un.echo.sequence = seq;
+
+    memcpy(pack->load, DATA_CONT, DATA_SIZE);
+    pack->hdr.checksum = packSum(pack, PACK_SIZE);
+}
+
+// qt slots()
+void PinGUI::on_pingButton_clicked()
+{
+    QString targetAddr = ui->lineEdit->text();
+    setIcmpFields(targetAddr);
 }
 
 void PinGUI::on_lineEdit_returnPressed()
