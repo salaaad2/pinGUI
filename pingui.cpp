@@ -64,10 +64,6 @@ void PinGUI::displayData()
     QString qttl = QString::fromStdString(std::to_string(ping->reply->ip.ttl));
 
     std::cout << "what ? \n";
-    ui->label_3->repaint();
-    ui->label_5->repaint();
-    ui->label_7->repaint();
-    ui->label_9->repaint();
 
     ui->label_3->setText(ping->url);
     ui->label_5->setText(qsnt);
@@ -112,14 +108,16 @@ int PinGUI::pingLoop(int const & sock)
     auto seq = 0;
 
     ui->label_3->setText(ping->url);
+
     for (;;)
     {
         if (running)
         {
             resetPack(seq);
             sendPing(sock);
-            std::cout << "display data" <<std::endl;
             displayData();
+            QApplication::processEvents();
+            std::cout << "display data" <<std::endl;
             seq++;
         }
         sleep(1);

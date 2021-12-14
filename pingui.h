@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtConcurrent/QtConcurrentRun>
+
 #include "pingheaders.h"
 
 QT_BEGIN_NAMESPACE
